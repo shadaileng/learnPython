@@ -12,19 +12,16 @@ __author__ = 'Shadaileng'
 import queue
 from multiprocessing.managers import BaseManager
 
-send_task = queue.Queue()
-recv_task = queue.Queue()
-
 class QueueManager(BaseManager):
 	pass
+def server():
+	send_task = queue.Queue()
+	recv_task = queue.Queue()
 
-QueueManager.register('get_send_task', callable = lambda: send_task)
-QueueManager.register('get_recv_task', callable = lambda: recv_task)
+	QueueManager.register('get_send_task', callable = lambda: send_task)
+	QueueManager.register('get_recv_task', callable = lambda: recv_task)
 
-manager = QueueManager(address=('', 5000), authkey=b'abc')
-
-
-if __name__ == '__main__':
+	manager = QueueManager(address=('', 5000), authkey=b'abc')
 	
 	manager.start()
 	send = manager.get_send_task()
@@ -41,3 +38,6 @@ if __name__ == '__main__':
 	
 	manager.shutdown()
 	print('master exit.')
+
+if __name__ == '__main__':
+	server()

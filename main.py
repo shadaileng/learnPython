@@ -9,6 +9,9 @@
 
 __author__ = 'Shadaileng'
 
+
+from process_test import ufork, multiProcess, processPool,subProcess,queuerw, thread
+
 if __name__ == '__main__':
 	print(__doc__  % __author__)
 	print('********IO************')
@@ -16,7 +19,6 @@ if __name__ == '__main__':
 	from io_test import picking
 	picking()	
 	print('********Process************')
-	from process_test import ufork, multiProcess, processPool,subProcess,queuerw, thread
 	#ufork()
 	
 	#multiProcess()
