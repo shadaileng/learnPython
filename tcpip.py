@@ -63,8 +63,31 @@ def tcp_client():
 	s.send(b'exit')
 	s.close()
 	
+def udp_server():
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s.bind(('127.0.0.1', 9999))
+	print('UDP server bind: 127.0.0.1, port: 9999')
+	while True:
+		data, addr = s.recvfrom(1024)
+		if data.decode('utf-8') == 'exit':
+			break
+		print('%s: %s' % (addr, data.decode('utf-8')))
+		s.sendto(('recv %s' % data.decode('utf-8')).encode('utf-8'), addr)
+	s.close()
+	
+def udp_client():
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	for data in ['shadaileng', 'qpf', 'Chik']:
+		s.sendto(data.encode('utf-8'), ('127.0.0.1', 9999))
+		print(s.recv(1024).decode('utf-8'))
+	
+	s.close()
 if __name__ == '__main__':
 	if	sys.argv[1] == '0':
 		tcp_server()
 	elif sys.argv[1] == '1':
 		tcp_client()
+	elif sys.argv[1] == '2':
+		udp_server()
+	elif sys.argv[1] == '3':
+		udp_client()
