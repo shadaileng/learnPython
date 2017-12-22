@@ -1,0 +1,32 @@
+<html>
+	<head>
+		<title>Home Page</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0
+			}
+			html, body{
+				width: 100%;
+				height: 100%;
+				background: #79f1af
+			}
+			.menu{
+				style=display:inline; 
+				border: 1px solid #22c7b5; 
+				padding: 4;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Home Page{% if name %}
+				<sub>Welcome {{name}}</sub>
+			{% endif %}
+		</h1>
+		{% if not name %}
+			<a class='menu' href='/login/template'>Login</a>
+		{% else %}
+			<a class='menu' href='/logout/template'>Logout</a>
+		{% endif %}
+	</body>
+</html>
