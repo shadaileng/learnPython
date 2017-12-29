@@ -8,91 +8,47 @@
 '''
 
 __author__ = 'Shadaileng'
-
-class Field(object):
-	def __init__(self, name, column_type, primary_key, default):
-		self.name = name
-		self.column_type = column_type
-		self.primary_key = primary_key
-		self.default = default
-	def __str__(self):
-		return '<%s, %s: %s>' % (self.__class__.__name__, self.column_type, self.name)
-
-class StringField(Field):
-	def __init__(self, name = None, column_type = 'varchar(100)', primary_key = False, default = None):
-		super().__init__(name, column_type, primary_key, default)
-
-class IntegerField(Field):
-	def __init__(self, name = None, column_type = 'Number(10)', primary_key = False, default = None):
-		super().__init__(name, column_type, primary_key, default)
-
-class ModelMetaClass(type):
-	def __new__(cls, name, base, attrs):
-		if name == 'Model':
-			return type.__new__(cls, name, base, attrs)
-		print('Found model %s' % name)
-		
-		mappings = dict()
-		primary_key = None
-		for k, v in attrs.items():
-			if isinstance(v, Field):
-				print('Found mapping: %s ==> %s' % (k, v))
-				mappings[k] = v
-				if v.primary_key:
-					if primary_key:
-						raise RuntimeError('primary_key is not unique')
-					else:
-						primary_key = k
-		for k in mappings.keys():
-			attrs.pop(k)
-		attrs['__primary_key__'] = primary_key
-		attrs['__fields__'] = mappings.keys()
-		attrs['__mappings__'] = mappings
-		attrs['__table__'] = name
-		return type.__new__(cls, name, base, attrs)
-class Model(dict, metaclass=ModelMetaClass):
-	def __init__(self, **kw):
-		super(Model, self).__init__(**kw)
-	def __getattr__(self, key):
-		try:
-			return self[key]
-		except KeyError:
-			raise AttributeError('Model Object has no attribute %s' % key)
-	def __setattr__(self, key, values):
-		self[key] = values
-	def save(self):
-		params = []
-		args = []
-		for k, v in self.__mappings__.items():
-			params.append('?')
-			args.append(getattr(self, k, None)) 
-		sql = 'insert into %s (%s) values (%s)' % (self.__table__, ','.join(self.__fields__), ','.join(params))
-		print('SQL: %s' % sql)
-		print('ARGS: %s' % args)
-	def update(self):
-		params = []
-		args = []
-		for k, v in self.__mappings__.items():
-			if k == self.__primary_key__:
-				continue
-			params.append('%s = ?' % k)
-			args.append(getattr(self, k, None)) 
-		sql = 'update %s set %s where %s = ?' % (self.__table__, ','.join(params), self.__primary_key__)
-		print('SQL: %s' % sql)
-		print('id: %s' % getattr(self, self.__primary_key__, None))
-	@classmethod
-	def find(self, id):
-		sql = 'select %s from %s where %s = "%s"' % (','.join(self.__fields__), self.__table__, self.__primary_key__, '?')
-		print('SQL: %s' % sql)
-		print('id: %s' % id)
+import logging; logging.basicConfig(level=logging.INFO)
+import time
+from datetime import datetime
+from web_domain_maker import Model, StringField
+def next_id():
+	return '%015d000' % (time.time() * 1000)
+	
 class User(Model):
-	id = IntegerField('id', primary_key = True)
-	name = StringField('name')
-	password = StringField('password')
+	id = StringField(name = 'id', default = next_id, column_type = 'varchar(50)', primary_key = True)
+	name = StringField(name = 'name', column_type = 'varchar(50)')
+	password = StringField(name = 'password', column_type = 'varchar(50)')
+	email = StringField(name = 'email', column_type = 'varchar(50)')
+	admin = StringField(name = 'admin', column_type = 'varchar(1)')
+	image = StringField(name = 'image', column_type = 'varchar(500)')
+	create_time = StringField(name = 'create_time', column_type = 'varchar(50)', default = datetime.fromtimestamp(time.time()))
+	
+class Blog(Model):
+	id = StringField(name = 'id', default = next_id, column_type = 'varchar(50)', primary_key = True)
+	name = StringField(name = 'name', column_type = 'varchar(50)')
+	user_id = StringField(name = 'user_id', column_type = 'varchar(50)')
+	summary = StringField(name = 'summary', column_type = 'varchar(50)')
+	content = StringField(name = 'content', column_type = 'varchar(50)')
+	create_time = StringField(name = 'create_time', column_type = 'varchar(50)', default = time.time)
+
+class Comment(Model):
+	id = StringField(name = 'id', default = next_id, column_type = 'varchar(50)', primary_key = True)
+	blog_id = StringField(name = 'blog_id', column_type = 'varchar(50)')
+	user_id = StringField(name = 'user_id', column_type = 'varchar(50)')
+	content = StringField(name = 'content', column_type = 'varchar(50)')
+	create_time = StringField(name = 'create_time', column_type = 'varchar(50)', default = time.time)
 
 if __name__ == '__main__':
 	print(__doc__ % __author__)
-	user = User(id = 111, name = 'Shadaileng', password = '123123')
-	user.save()
-	user.update()
-	User.find(3)
+#	user = User(name = 'shadaileng', password = '123123', email = 'qpf0510@qq.com', admin = '0', image = '../res/tumblr.png')
+#	print(user.save())
+	rs = User().find()
+	for row in rs:
+		print(row)	
+	'''
+	user = User(name = 'qpf', password = '123123', email = 'qpf0510@qq.com', admin = '0', image = '../res/tumblr.png')
+	print(user.save())
+	'''
+	
+	
