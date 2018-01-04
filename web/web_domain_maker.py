@@ -100,11 +100,11 @@ class Model(dict, metaclass=ModelMetaClass):
 		params = []
 		args = []
 		for k, v in self.__mappings__.items():
-			if k == self.__primary_key__:
+			if k == self.__primary_key__ or v is None:
 				continue
 			params.append('%s = ?' % k)
-			args.append(self.getValueOrDefault(k))
-		args.append(self.getValueOrDefault(self.__primary_key__))
+			args.append(self.getvalue(k))
+		args.append(self.getvalue(self.__primary_key__))
 		sql = 'update %s set %s where %s = ?' % (self.__table__, ','.join(params), self.__primary_key__)
 		logging.info('SQL: %s' % sql)
 		logging.info('id: %s' % self.getValueOrDefault(self.__primary_key__))
@@ -120,7 +120,8 @@ class Model(dict, metaclass=ModelMetaClass):
 		sql = 'select %s from %s where %s' % (','.join(self.__fields__), self.__table__, ' and '.join(params))
 		logging.info('SQL: %s' % sql)
 		logging.info('ARGS: %s' % args)
-		return select(sql, args, size)
+		rows = select(sql, args, size)
+		return [self(**row) for row in rows]
 	@classmethod
 	def deleteById(self, id):
 		sql = 'delete from %s where %s = ?' % (self.__table__, self.__primary_key__)
@@ -132,7 +133,8 @@ class Model(dict, metaclass=ModelMetaClass):
 		sql = 'select %s from %s where %s = ?' % (','.join(self.__fields__), self.__table__, self.__primary_key__)
 		logging.info('SQL: %s' % sql)
 		logging.info('id: %s' % id)
-		return select(sql, [id], 1)
+		row = select(sql, [id], 1)
+		return self(**row[0]) 
 
 if __name__ == '__main__':
 	print(__doc__ % __author__)

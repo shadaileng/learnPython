@@ -41,11 +41,14 @@ class Comment(Model):
 
 if __name__ == '__main__':
 	print(__doc__ % __author__)
-#	user = User(name = 'shadaileng', password = '123123', email = 'qpf0510@qq.com', admin = '0', image = '../res/tumblr.png')
+#	user = User(name = 'qpf', password = '123456', email = 'qpf0510@qq.com', admin = '0', image = '../res/tumblr.png')
 #	print(user.save())
-	rs = User().find()
-	for row in rs:
-		print(row)	
+#	User(id = '001514527699550000', name = 'Shdaileng').update()
+#	rs = User().find()
+#	for row in rs:
+#		print(row)	
+	user = User.findById('001514527699550000')
+	print(user)
 	'''
 	user = User(name = 'qpf', password = '123123', email = 'qpf0510@qq.com', admin = '0', image = '../res/tumblr.png')
 	print(user.save())

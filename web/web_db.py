@@ -73,6 +73,11 @@ if __name__ == '__main__':
 #	execute('create table blog(id varchar(50) primary key, name varchar(50), user_id varchar(50), summary varchar(50), content varchar(1500), create_time varchar(50))', [])
 #	execute('create table comment(id varchar(50) primary key, blog_id varchar(50), user_id varchar(50), content varchar(500), create_time varchar(50))', [])
 #	execute('delete from user', [])
+	
+	rs = select('select * from USER', [])
+	
+	for row in rs:
+		print(row)	
 '''
 	rs = select('select name from sqlite_master where type = "table"', (), 4)
 	for row in rs:
