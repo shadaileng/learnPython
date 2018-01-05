@@ -74,6 +74,17 @@ class Model(dict, metaclass=ModelMetaClass):
 				logging.info('field %s using default value %s' % (key, str(value)))
 				setattr(self, key, value)
 		return value
+		
+	def rows2mapping(self, rows):
+		d = []
+		fields = list(self.__fields__)
+		for row in rows:
+			r = {}
+			for i in range(len(fields)):
+				r[fields[i]] = row[i]
+			d.append(r)
+		return d
+	
 	def save(self):
 		params = []
 		args = []
@@ -109,6 +120,7 @@ class Model(dict, metaclass=ModelMetaClass):
 		logging.info('SQL: %s' % sql)
 		logging.info('id: %s' % self.getValueOrDefault(self.__primary_key__))
 		return execute(sql, args)
+	
 	def find(self, size = None):
 		params = ['1 = 1']
 		args = []
@@ -120,8 +132,8 @@ class Model(dict, metaclass=ModelMetaClass):
 		sql = 'select %s from %s where %s' % (','.join(self.__fields__), self.__table__, ' and '.join(params))
 		logging.info('SQL: %s' % sql)
 		logging.info('ARGS: %s' % args)
-		rows = select(sql, args, size)
-		return [self(**row) for row in rows]
+		rows = self.rows2mapping(select(sql, args, size))
+		return [Model(**row) for row in rows]
 	@classmethod
 	def deleteById(self, id):
 		sql = 'delete from %s where %s = ?' % (self.__table__, self.__primary_key__)
@@ -133,8 +145,8 @@ class Model(dict, metaclass=ModelMetaClass):
 		sql = 'select %s from %s where %s = ?' % (','.join(self.__fields__), self.__table__, self.__primary_key__)
 		logging.info('SQL: %s' % sql)
 		logging.info('id: %s' % id)
-		row = select(sql, [id], 1)
-		return self(**row[0]) 
+		rows = self.rows2mapping(self, select(sql, [id], 1))
+		return self(**rows[0]) 
 
 if __name__ == '__main__':
 	print(__doc__ % __author__)
