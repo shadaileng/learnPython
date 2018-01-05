@@ -44,11 +44,11 @@ if __name__ == '__main__':
 #	user = User(name = 'qpf', password = '123456', email = 'qpf0510@qq.com', admin = '0', image = '../res/tumblr.png')
 #	print(user.save())
 #	User(id = '001514527699550000', name = 'Shdaileng').update()
-#	rs = User().find()
-#	for row in rs:
-#		print(row)	
-	user = User.findById('001514527699550000')
-	print(user)
+	rs = User().find()
+	for row in rs:
+		print(row)	
+#	user = User.findById('001514527699550000')
+#	print(user)
 	'''
 	user = User(name = 'qpf', password = '123123', email = 'qpf0510@qq.com', admin = '0', image = '../res/tumblr.png')
 	print(user.save())

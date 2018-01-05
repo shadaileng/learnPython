@@ -10,7 +10,7 @@
 __author__ = 'Shadaileng'
 import logging; logging.basicConfig(level=logging.INFO)
 
-import asyncio, inspect, os, json
+import asyncio, inspect, os, json, time
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
@@ -128,6 +128,11 @@ def response_factory(app, handler):
 			return rep
 	return response
 		
+def add_static(app):
+	path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+	app.router.add_static('/static/', path)
+	logging.info('add static %s => %s' % ('/static/', path))
+
 
 @asyncio.coroutine
 def init(loop):
@@ -135,6 +140,7 @@ def init(loop):
 	init_jinja2(app, filters=dict(datetime=datetime_filter))
 	app.router.add_route('GET', '/', index)
 	add_routes(app, 'web_handlers')
+	add_static(app)
 	srv = yield from loop.create_server(app.make_handler(), '127.0.0.1', 8080)
 	logging.info('server started at 127.0.0.1:8080')
 	
