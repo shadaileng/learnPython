@@ -44,7 +44,10 @@ def toDict(d):
 
 configs = {
 	'debug': True,
-	'db': 'test.db'
+	'db': 'test.db',
+	'session': {
+		'flag': 'Shadaileng'
+	}
 }
 
 try:

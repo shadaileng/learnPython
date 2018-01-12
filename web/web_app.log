@@ -1,0 +1,64 @@
+2018-01-12 15:18:23,910 INFO web_domain_maker.py line:37 Found model User
+2018-01-12 15:18:23,910 INFO web_domain_maker.py line:43 Found mapping: id ==> <StringField, varchar(50): id>
+2018-01-12 15:18:23,910 INFO web_domain_maker.py line:43 Found mapping: name ==> <StringField, varchar(50): name>
+2018-01-12 15:18:23,910 INFO web_domain_maker.py line:43 Found mapping: password ==> <StringField, varchar(50): password>
+2018-01-12 15:18:23,910 INFO web_domain_maker.py line:43 Found mapping: email ==> <StringField, varchar(50): email>
+2018-01-12 15:18:23,910 INFO web_domain_maker.py line:43 Found mapping: admin ==> <StringField, varchar(1): admin>
+2018-01-12 15:18:23,911 INFO web_domain_maker.py line:43 Found mapping: image ==> <StringField, varchar(500): image>
+2018-01-12 15:18:23,911 INFO web_domain_maker.py line:43 Found mapping: create_time ==> <StringField, varchar(50): create_time>
+2018-01-12 15:18:23,911 INFO web_domain_maker.py line:37 Found model Blog
+2018-01-12 15:18:23,911 INFO web_domain_maker.py line:43 Found mapping: id ==> <StringField, varchar(50): id>
+2018-01-12 15:18:23,911 INFO web_domain_maker.py line:43 Found mapping: name ==> <StringField, varchar(50): name>
+2018-01-12 15:18:23,911 INFO web_domain_maker.py line:43 Found mapping: user_id ==> <StringField, varchar(50): user_id>
+2018-01-12 15:18:23,911 INFO web_domain_maker.py line:43 Found mapping: summary ==> <StringField, varchar(50): summary>
+2018-01-12 15:18:23,911 INFO web_domain_maker.py line:43 Found mapping: content ==> <StringField, varchar(50): content>
+2018-01-12 15:18:23,911 INFO web_domain_maker.py line:43 Found mapping: create_time ==> <StringField, varchar(50): create_time>
+2018-01-12 15:18:23,912 INFO web_domain_maker.py line:37 Found model Comment
+2018-01-12 15:18:23,912 INFO web_domain_maker.py line:43 Found mapping: id ==> <StringField, varchar(50): id>
+2018-01-12 15:18:23,912 INFO web_domain_maker.py line:43 Found mapping: blog_id ==> <StringField, varchar(50): blog_id>
+2018-01-12 15:18:23,912 INFO web_domain_maker.py line:43 Found mapping: user_id ==> <StringField, varchar(50): user_id>
+2018-01-12 15:18:23,912 INFO web_domain_maker.py line:43 Found mapping: content ==> <StringField, varchar(50): content>
+2018-01-12 15:18:23,912 INFO web_domain_maker.py line:43 Found mapping: create_time ==> <StringField, varchar(50): create_time>
+2018-01-12 15:18:23,917 INFO web_app.py line:57 init jinja2 ...
+2018-01-12 15:18:23,917 INFO web_app.py line:69 set jinja2 template path: /home/shadaileng/develop/python/workspace/web/templates
+2018-01-12 15:18:23,921 INFO web_app.py line:28 func: api_register_user, method: POST, path: /api/users
+2018-01-12 15:18:23,922 INFO web_app.py line:28 func: authenticate, method: POST, path: /api/authenticate
+2018-01-12 15:18:23,922 INFO web_app.py line:28 func: bye, method: GET, path: /api/users
+2018-01-12 15:18:23,923 INFO web_app.py line:28 func: hello, method: GET, path: /
+2018-01-12 15:18:23,923 INFO web_app.py line:28 func: redirect_login, method: GET, path: /signin
+2018-01-12 15:18:23,924 INFO web_app.py line:28 func: redirect_register, method: GET, path: /register
+2018-01-12 15:18:23,924 INFO web_app.py line:28 func: signout, method: GET, path: /signout
+2018-01-12 15:18:23,925 INFO web_app.py line:136 add static /static/ => /home/shadaileng/develop/python/workspace/web/static
+2018-01-12 15:18:23,926 INFO web_app.py line:147 server started at 127.0.0.1:8080
+2018-01-12 15:18:32,761 INFO web_domain_maker.py line:37 Found model User
+2018-01-12 15:18:32,762 INFO web_domain_maker.py line:43 Found mapping: id ==> <StringField, varchar(50): id>
+2018-01-12 15:18:32,762 INFO web_domain_maker.py line:43 Found mapping: name ==> <StringField, varchar(50): name>
+2018-01-12 15:18:32,762 INFO web_domain_maker.py line:43 Found mapping: password ==> <StringField, varchar(50): password>
+2018-01-12 15:18:32,762 INFO web_domain_maker.py line:43 Found mapping: email ==> <StringField, varchar(50): email>
+2018-01-12 15:18:32,762 INFO web_domain_maker.py line:43 Found mapping: admin ==> <StringField, varchar(1): admin>
+2018-01-12 15:18:32,762 INFO web_domain_maker.py line:43 Found mapping: image ==> <StringField, varchar(500): image>
+2018-01-12 15:18:32,762 INFO web_domain_maker.py line:43 Found mapping: create_time ==> <StringField, varchar(50): create_time>
+2018-01-12 15:18:32,763 INFO web_domain_maker.py line:37 Found model Blog
+2018-01-12 15:18:32,763 INFO web_domain_maker.py line:43 Found mapping: id ==> <StringField, varchar(50): id>
+2018-01-12 15:18:32,763 INFO web_domain_maker.py line:43 Found mapping: name ==> <StringField, varchar(50): name>
+2018-01-12 15:18:32,763 INFO web_domain_maker.py line:43 Found mapping: user_id ==> <StringField, varchar(50): user_id>
+2018-01-12 15:18:32,763 INFO web_domain_maker.py line:43 Found mapping: summary ==> <StringField, varchar(50): summary>
+2018-01-12 15:18:32,763 INFO web_domain_maker.py line:43 Found mapping: content ==> <StringField, varchar(50): content>
+2018-01-12 15:18:32,763 INFO web_domain_maker.py line:43 Found mapping: create_time ==> <StringField, varchar(50): create_time>
+2018-01-12 15:18:32,763 INFO web_domain_maker.py line:37 Found model Comment
+2018-01-12 15:18:32,763 INFO web_domain_maker.py line:43 Found mapping: id ==> <StringField, varchar(50): id>
+2018-01-12 15:18:32,764 INFO web_domain_maker.py line:43 Found mapping: blog_id ==> <StringField, varchar(50): blog_id>
+2018-01-12 15:18:32,764 INFO web_domain_maker.py line:43 Found mapping: user_id ==> <StringField, varchar(50): user_id>
+2018-01-12 15:18:32,764 INFO web_domain_maker.py line:43 Found mapping: content ==> <StringField, varchar(50): content>
+2018-01-12 15:18:32,764 INFO web_domain_maker.py line:43 Found mapping: create_time ==> <StringField, varchar(50): create_time>
+2018-01-12 15:18:32,768 INFO web_app.py line:57 init jinja2 ...
+2018-01-12 15:18:32,768 INFO web_app.py line:69 set jinja2 template path: /home/shadaileng/develop/python/workspace/web/templates
+2018-01-12 15:18:32,770 INFO web_app.py line:28 func: api_register_user, method: POST, path: /api/users
+2018-01-12 15:18:32,771 INFO web_app.py line:28 func: authenticate, method: POST, path: /api/authenticate
+2018-01-12 15:18:32,771 INFO web_app.py line:28 func: bye, method: GET, path: /api/users
+2018-01-12 15:18:32,772 INFO web_app.py line:28 func: hello, method: GET, path: /
+2018-01-12 15:18:32,772 INFO web_app.py line:28 func: redirect_login, method: GET, path: /signin
+2018-01-12 15:18:32,773 INFO web_app.py line:28 func: redirect_register, method: GET, path: /register
+2018-01-12 15:18:32,773 INFO web_app.py line:28 func: signout, method: GET, path: /signout
+2018-01-12 15:18:32,774 INFO web_app.py line:136 add static /static/ => /home/shadaileng/develop/python/workspace/web/static
+2018-01-12 15:18:32,774 INFO web_app.py line:147 server started at 127.0.0.1:8080

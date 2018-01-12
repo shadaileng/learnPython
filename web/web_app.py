@@ -8,12 +8,13 @@
 '''
 
 __author__ = 'Shadaileng'
-import logging; logging.basicConfig(level=logging.INFO)
+import logging; logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(filename)s line:%(lineno)d %(message)s')
 
 import asyncio, inspect, os, json, time
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
+from web_handlers_base import RequestHandler, auth_factory
 
 def index(request):
 	return web.Response(body=b'<h1>Index</h1>', content_type='text/html')
@@ -24,10 +25,10 @@ def add_route(app, fn):
 	path = getattr(fn, '__route__', None)
 	if method is None or path is None:
 		raise ValueError('@get or @post is not define at %s' % str(fn))
-	print('func: %s, method: %s, path: %s' % (fn.__name__, method, path))
+	logging.info('func: %s, method: %s, path: %s' % (fn.__name__, method, path))
 	if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):
 		fn = asyncio.coroutine(fn)
-	app.router.add_route(method, path, fn)
+	app.router.add_route(method, path, RequestHandler(app, fn))
 
 def add_routes(app, module_name):
 	n = module_name.rfind('.')
@@ -48,7 +49,7 @@ def add_routes(app, module_name):
 @asyncio.coroutine
 def logger_factory(app, handler):
 	def logger(request):
-		logging.info('Request: %s %s' % (request.method, request.path))
+		logging.info('%s Request: %s %s' % (handler.__name__, request.method, request.path))
 		return (yield from handler(request))
 	return logger
 
@@ -90,7 +91,7 @@ def datetime_filter(t):
 def response_factory(app, handler):
 	@asyncio.coroutine
 	def response(request):
-		logging.info('Response handler ...')
+		logging.info('Response handler: %s ...' % handler.__name__)
 		rep = yield from handler(request)
 		if isinstance(rep, web.StreamResponse):
 			return rep
@@ -107,8 +108,9 @@ def response_factory(app, handler):
 			return rep
 		if isinstance(rep, dict):
 			template = rep.get('__template__')
+			logging.info('======%s=====' % template)
 			if template is None:
-				rep = web.Response(body=json.dump(rep, ensure_ascii=False, default = lambda o: o.__dict__).encode('utf-8'))
+				rep = web.Response(body=json.dumps(rep, ensure_ascii=False, default = lambda o: o.__dict__).encode('utf-8'))
 				rep.content_type = 'application/json;charset=utf-8'
 				return rep
 			else:
@@ -136,9 +138,9 @@ def add_static(app):
 
 @asyncio.coroutine
 def init(loop):
-	app = web.Application(loop=loop, middlewares = [logger_factory, response_factory])
+	app = web.Application(loop=loop, middlewares = [logger_factory, auth_factory, response_factory])
 	init_jinja2(app, filters=dict(datetime=datetime_filter))
-	app.router.add_route('GET', '/', index)
+#	app.router.add_route('GET', '/', index)
 	add_routes(app, 'web_handlers')
 	add_static(app)
 	srv = yield from loop.create_server(app.make_handler(), '127.0.0.1', 8080)
@@ -155,3 +157,4 @@ if __name__ == '__main__':
 	print(__doc__ % __author__)
 	
 	startServer()
+	

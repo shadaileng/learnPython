@@ -8,7 +8,7 @@
 '''
 
 __author__ = 'Shadaileng'
-import logging; logging.basicConfig(level=logging.INFO)
+import logging; logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(filename)s line:%(lineno)d %(message)s')
 import time
 from datetime import datetime
 from web_domain_maker import Model, StringField
@@ -22,7 +22,7 @@ class User(Model):
 	email = StringField(name = 'email', column_type = 'varchar(50)')
 	admin = StringField(name = 'admin', column_type = 'varchar(1)')
 	image = StringField(name = 'image', column_type = 'varchar(500)')
-	create_time = StringField(name = 'create_time', column_type = 'varchar(50)', default = datetime.fromtimestamp(time.time()))
+	create_time = StringField(name = 'create_time', column_type = 'varchar(50)', default = datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S.%f'))
 	
 class Blog(Model):
 	id = StringField(name = 'id', default = next_id, column_type = 'varchar(50)', primary_key = True)
@@ -30,14 +30,14 @@ class Blog(Model):
 	user_id = StringField(name = 'user_id', column_type = 'varchar(50)')
 	summary = StringField(name = 'summary', column_type = 'varchar(50)')
 	content = StringField(name = 'content', column_type = 'varchar(50)')
-	create_time = StringField(name = 'create_time', column_type = 'varchar(50)', default = time.time)
+	create_time = StringField(name = 'create_time', column_type = 'varchar(50)', default = datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S.%f'))
 
 class Comment(Model):
 	id = StringField(name = 'id', default = next_id, column_type = 'varchar(50)', primary_key = True)
 	blog_id = StringField(name = 'blog_id', column_type = 'varchar(50)')
 	user_id = StringField(name = 'user_id', column_type = 'varchar(50)')
 	content = StringField(name = 'content', column_type = 'varchar(50)')
-	create_time = StringField(name = 'create_time', column_type = 'varchar(50)', default = time.time)
+	create_time = StringField(name = 'create_time', column_type = 'varchar(50)', default = datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S.%f'))
 
 if __name__ == '__main__':
 	print(__doc__ % __author__)

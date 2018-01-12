@@ -9,7 +9,8 @@
 
 __author__ = 'Shadaileng'
 
-import logging; logging.basicConfig(level=logging.INFO)
+import logging; logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(filename)s line:%(lineno)d %(message)s')
+import asyncio
 from web_db import select, execute
 
 class Field(object):
@@ -84,7 +85,7 @@ class Model(dict, metaclass=ModelMetaClass):
 				r[fields[i]] = row[i]
 			d.append(r)
 		return d
-	
+	@asyncio.coroutine
 	def save(self):
 		params = []
 		args = []
@@ -95,6 +96,7 @@ class Model(dict, metaclass=ModelMetaClass):
 		logging.info('SQL: %s' % sql)
 		logging.info('ARGS: %s' % args)
 		return execute(sql, args)
+	@asyncio.coroutine
 	def delete(self):
 		params = []
 		args = []
@@ -107,6 +109,7 @@ class Model(dict, metaclass=ModelMetaClass):
 		logging.info('SQL: %s' % sql)
 		logging.info('ARGS: %s' % args)
 		return execute(sql, args)
+	@asyncio.coroutine
 	def update(self):
 		params = []
 		args = []
@@ -120,7 +123,7 @@ class Model(dict, metaclass=ModelMetaClass):
 		logging.info('SQL: %s' % sql)
 		logging.info('id: %s' % self.getValueOrDefault(self.__primary_key__))
 		return execute(sql, args)
-	
+	@asyncio.coroutine
 	def find(self, size = None):
 		params = ['1 = 1']
 		args = []
@@ -133,14 +136,17 @@ class Model(dict, metaclass=ModelMetaClass):
 		logging.info('SQL: %s' % sql)
 		logging.info('ARGS: %s' % args)
 		rows = self.rows2mapping(select(sql, args, size))
+		if len(rows) <= 0:
+			return None
 		return [Model(**row) for row in rows]
+	@asyncio.coroutine
 	@classmethod
 	def deleteById(self, id):
 		sql = 'delete from %s where %s = ?' % (self.__table__, self.__primary_key__)
 		logging.info('SQL: %s' % sql)
 		logging.info('id: %s' % id)
 		return execute(sql, [id])
-	@classmethod
+	@asyncio.coroutine
 	def findById(self, id):
 		sql = 'select %s from %s where %s = ?' % (','.join(self.__fields__), self.__table__, self.__primary_key__)
 		logging.info('SQL: %s' % sql)

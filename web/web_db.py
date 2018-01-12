@@ -8,13 +8,13 @@
 '''
 
 __author__ = 'Shadaileng'
-import logging; logging.basicConfig(level=logging.INFO)
+import logging; logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(filename)s line:%(lineno)d %(message)s')
 import sqlite3, asyncio
 
 __count = 0
 
 #@asyncio.coroutine
-def create_sqlite_connect(db = 'test.db', max = 10):
+def create_sqlite_connect(db = 'test.db', max = 100):
 	global __count
 	__count = __count + 1
 	try:
@@ -22,7 +22,7 @@ def create_sqlite_connect(db = 'test.db', max = 10):
 		if __count <= max:
 			conn = sqlite3.connect(db)
 		else:
-			raise ConnExcept('full connection')
+			raise Exception('full connection')
 	except BaseException as e:
 		logging.info(e)
 		conn = None

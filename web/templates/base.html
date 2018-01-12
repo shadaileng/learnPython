@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="uk-width-1-1">
 	<head>
 		<meta charset='utf-8'/>
 		{% block meta %}{% endblock %}
@@ -8,6 +8,7 @@
 		<link rel="stylesheet" href="/static/css/uikit.gradient.min.css">
 		<link rel="stylesheet" href="/static/css/awesome.css">
 		<script src="/static/js/jquery.min.js"></script>
+		<script src="/static/js/vue.min.js"></script>
 		<script src="/static/js/sha1.min.js"></script>
 		<script src="/static/js/uikit.min.js"></script>
 		<script src="/static/js/awesome.js"></script>
@@ -35,7 +36,7 @@
 						</li>>
 					{% else %}
 						<li><a href="/signin"><i class="uk-icon-sign-in"></i>登陆</a></li>
-						<li><a href="/signin"><i class="uk-icon-edit"></i>注册</a></li>
+						<li><a href="/register"><i class="uk-icon-edit"></i>注册</a></li>
 					{% endif %}
 					</ul>				
 				</div>

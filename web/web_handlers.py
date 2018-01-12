@@ -9,32 +9,19 @@
 
 __author__ = 'Shadaileng'
 
-import functools, time
+import logging; logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(filename)s line:%(lineno)d %(message)s')
+import functools, time, re, json, hashlib, base64
 from aiohttp import web
-from web_domain import User, Blog
+from web_domain import User, Blog, next_id
+from web_handlers_base import get, post, user2cookie
 
-def get(path):
-	def decorator(func):
-		@functools.wraps(func)
-		def wrapper(*args, **kw):
-			return func(*args, **kw)
-		wrapper.__method__ = 'GET'
-		wrapper.__route__ = path
-		return wrapper
-	return decorator
+COOKIE_NAME = 'shadaileng'
 
-def post(path):
-	def decorator(func):
-		@functools.wraps(func)
-		def wrapper(*args, **kw):
-			return func(*args, **kw)
-		wrapper.__method__ = 'POST'
-		wrapper.__route__ = path
-		return wrapper
-	return decorator
+_RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
+_RE_SHA1 = re.compile(r'[0-9a-f]{40}$')
 
 
-@get('/blog')
+@get('/')
 def hello(request):
 	summary = "这是一篇博客，我也不知道写的是什么。。。。"
 	blogs = [
@@ -49,22 +36,113 @@ def hello(request):
 		'__template__': 'blog.html',
 		'blogs': blogs
 	}
-	
-@get('/user')
-def bye(request):
-	print('bye ')
-	return web.Response(body=b'<h1>bye</h1>', content_type='text/html')
-	
-@get('/test')
-def bye(request):
-	users = User().find()
-	print('get users: ' )
-	for user in users:
-		print('name: %s, email: %s' % (user.name, user.email))
+
+@get('/register')
+def redirect_register(request):
 	return {
-		'users': users,
-		'__template__': 'test.html'
+		'__template__': 'register.html'
 	}
 
+@post('/api/users')
+def api_register_user(*, name, email, password):
+
+	logging.info('args:', name, email, password)
+	
+	if not name or not name.strip():
+		raise Exception('name is null')
+	if not email or not _RE_EMAIL.match(email):
+		raise Exception('email is not format')
+	if not password:
+		raise Exception('password is null')
+	users = yield from User(email=email).find()
+	logging.info('users: %s' % users)
+	if users is not None:
+		raise Exception('email: %s is in use' % email)
+	uid = next_id()
+	sha1_passwd = '%s-%s' % (uid, password)
+	
+	user = User(id=uid, name=name, password=hashlib.sha1(sha1_passwd.encode('utf-8')).hexdigest(), email=email, admin='0', image='../res/tumblr.png', )
+	res = yield from user.save()
+	if res == 1:
+		logging.info('register successed')
+	else:
+		logging.info('register failed')
+	rep = web.Response()
+	rep.set_cookie(COOKIE_NAME, user2cookie(user, 86400), max_age=86400, httponly=True)
+	user.password = '******'
+	rep.content_type = 'application/json'
+	rep.body = json.dumps(user, ensure_ascii=False).encode('utf-8')
+	
+	return rep
+
+
+@get('/signin')
+def redirect_login(request):
+	return {
+		'__template__': 'login.html'
+	}
+
+@post('/api/authenticate')
+def authenticate(*, email, password):
+	if not email:
+		raise Exception('email is null')
+	if not password:
+		raise Exception('password is null')
+	users = yield from User(email=email).find()
+	if len(users) == 0:
+		raise Exception('user is not exist')
+	user = users[0]
+	
+	sha1_passwd = '%s-%s' % (user.id, password)
+	sha1 = hashlib.sha1(sha1_passwd.encode('utf-8')).hexdigest()
+	
+	if user.password != sha1:
+		logging.info('==password: %s===' % user.password)
+		logging.info('==sha1: %s===' % sha1)
+		raise Exception('password is wrong')
+	user.password = '******'
+	rep = web.Response()
+	rep.set_cookie(COOKIE_NAME, user2cookie(user, 86400), max_age=86400, httponly=True)
+	rep.content_type = 'application/json'
+	rep.body = json.dumps(user, ensure_ascii=False).encode('utf-8')
+	
+	return rep
+	
+@get('/signout')
+def signout(request):
+	referer = request.headers.get('Referer')
+	rep = web.Response(referer or '/')
+	rep.set_cookie(COOKIE_NAME, '-delete-', max_age=0, httponly=True)
+	logging.info('user signout')
+	
+	return rep
+
+@get('/create_blogs')
+def redirect_create_blogs(request):
+	return {
+		'__template__': 'create_blog.html'
+	}
+@post('/api/blogs')
+def api_create_blog(*, name, summary, content):
+	if not name or not name.strip():
+		raise Exception('name is null')
+	if not summary or not summary.strip():
+		raise Exception('summary is null')
+	if not content or not content.strip():
+		raise Exception('content is null')
+	
+	blog = Blog(user_id = request.__user__.id, name = name.strip(), summary = summary.strip(), content = content.strip())
+	res = yield from Blog.save()
+	if res == 1:
+		logging.info('create_blog successed')
+	else:
+		logging.info('create_blog failed')
+	
+	rep = web.Response()
+	rep.content_type = 'application/json'
+	rep.body = json.dumps(blog, ensure_ascii=False).encode('utf-8')
+	
+	return rep
+
 if __name__ == '__main__':
-	add_routes(None, 'web_handlers')
+	pass
