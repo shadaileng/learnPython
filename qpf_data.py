@@ -5,11 +5,12 @@
 	*  Data  *
 	**********
 	   --powered by %s
-
 '''
 __author__ = 'Shadaileng'
 
 import numpy as np, pandas as pd, matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import animation
 
 df1 = pd.DataFrame(np.ones((3,4)), columns=['A', 'B', 'C', 'D'], index=[1, 2, 3])
 df2 = pd.DataFrame(np.ones((3,4)) * 2, columns=['A', 'B', 'C', 'E'], index=[1, 2, 4])
@@ -119,6 +120,94 @@ def plot():
 	
 	plt.show()
 
+def bar_():
+	ax = plt.gca()
+	ax.spines['right'].set_color('none')
+	ax.spines['top'].set_color('none')
+	ax.spines['bottom'].set_position(('data', 0))
+	ax.spines['left'].set_position(('axes', 0))
+	ax.xaxis.set_ticks_position('bottom')
+	ax.yaxis.set_ticks_position('left')
+
+	n = 10
+	x = np.arange(n)
+	y1 = (1 - x/float(n)) * np.random.uniform(0.5, 1.0, n)
+	y2 = (1 - x/float(n)) * np.random.uniform(0.5, 1.0, n)
+
+	plt.bar(x, y1, facecolor='#ccffcc', edgecolor='#ffffff')
+	plt.bar(x, -y2, facecolor='#ddffdd', edgecolor='#eeeeee')
+
+	plt.xlim(-.5, n)
+	plt.ylim(-1.25, 1.25)
+
+	plt.show()
+
+def z(x, y):
+	return (1 - x/2 + x**5 + y**3) * np.exp(-x**2 - y**2)
+#	return x**2 + y**2
+
+def contours_():
+	n = 256
+	x = np.linspace(-3, 3, n)
+	y = np.linspace(-3, 3, n)
+	x, y =np.meshgrid(x, y)
+	
+
+	plt.contourf(x, y, z(x, y), 8, alpha=.75, camp=plt.cm.hot)
+	plt.contour(x, y, z(x, y), 8, color='block', linewidth=.5)
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.show()
+
+def image_():
+	a = np.random.random((3, 3))
+	plt.imshow(a, interpolation='nearest', cmap='bone', origin='lower')
+
+	plt.colorbar()
+	plt.xticks(())
+	plt.yticks(())
+	plt.show()
+
+def img_3D():
+	fig = plt.figure()
+	ax = Axes3D(fig)
+
+	x = y = np.arange(-np.pi, np.pi, .5)
+	x, y = np.meshgrid(x, y)
+
+	r = np.sqrt(x**2 + y**2)
+
+	z = np.sin(r)
+
+	wave = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
+
+	print(dir(wave))
+
+	ax.contourf(x, y, z, zdir='z', offset=-2, cmap=plt.get_cmap('rainbow'))
+
+	ax.set_zlim(-2, 2)
+
+	plt.show()
+
+def animation_():
+	fig, ax = plt.subplots()
+	x = np.arange(0, 2 * np.pi, 0.01)
+	line,  = ax.plot(x, np.sin(x))
+
+	def animate(i):
+		line.set_ydata(np.sin(x + i / 10))
+		return line
+
+	def init():
+		line.set_ydata(np.sin(x))
+		return line
+
+	ani = animation.FuncAnimation(fig=fig, func=animate, frames=24, init_func=init, interval=100)
+
+
+	plt.show()
+
 if __name__ == '__main__':
 	print(__doc__ % __author__)
 	
@@ -133,4 +222,9 @@ if __name__ == '__main__':
 #	merge1()	
 #	merge2()
 	
-	plot()
+#	plot()
+#	bar_()
+#	contours_()
+#	image_()
+	img_3D()
+#	animation_()
