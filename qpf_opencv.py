@@ -10,7 +10,7 @@
 
 __author__ = 'Shadaileng'
 
-import cv2 as cv, matplotlib.pyplot as plt, numpy as np
+import cv2 as cv, matplotlib.pyplot as plt, numpy as np, matplotlib.gridspec as gridspec
 
 def rws():
 	img = cv.imread('./res/face.png', 1)
@@ -219,9 +219,170 @@ def trackbar():
 			img[:] = 0
 	cv.destroyAllWindows()
 
+def makeborder():
+	img = cv.imread('./res/tumblr.png', cv.IMREAD_COLOR)
+	fig = plt.figure()
+	plt.subplot(231)
+	plt.imshow(img, 'gray')
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.subplot(232)
+	plt.imshow(cv.copyMakeBorder(img, 100, 100, 100, 100, cv.BORDER_CONSTANT, value=(255, 0, 0)))
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.subplot(233)
+	plt.imshow(cv.copyMakeBorder(img, 100, 100, 100, 100, cv.BORDER_REFLECT))
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.subplot(234)
+	plt.imshow(cv.copyMakeBorder(img, 100, 100, 100, 100, cv.BORDER_DEFAULT))
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.subplot(235)
+	plt.imshow(cv.copyMakeBorder(img, 100, 100, 100, 100, cv.BORDER_REPLICATE))
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.subplot(236)
+	plt.imshow(cv.copyMakeBorder(img, 100, 100, 100, 100, cv.BORDER_WRAP))
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.show()
+
+
+def operate():
+	img1 = cv.imread('./res/tumblr.png', cv.IMREAD_COLOR)
+	img2 = cv.imread('./res/face.png', cv.IMREAD_COLOR)
+	fig = plt.figure()
+	plt.subplot(331)
+	plt.imshow(img1, 'gray')
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.subplot(332)
+	plt.imshow(img2, 'gray')
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.subplot(333)
+	plt.imshow(img1[0:512, 0:512] + img2)
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.subplot(334)
+	plt.imshow(cv.add(img1[0:512, 0:512], img2))
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.subplot(335)
+	plt.imshow(cv.addWeighted(img1[0:512, 0:512], 0.7, img2, 0.3, 1))
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.show()
+
+def bitwise():
+	img1 = cv.imread('./res/tumblr.png', cv.IMREAD_COLOR)
+	img2 = cv.imread('./res/face.png', cv.IMREAD_COLOR)
+
+	fig = plt.figure()
+	gs = gridspec.GridSpec(3, 3)
+
+	plt.subplot(gs[0,0])
+	plt.imshow(img1)
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.subplot(gs[0,1])
+	plt.imshow(img2)
+	plt.xticks(())
+	plt.yticks(())
+
+	h, w = (img1.shape[0] if img1.shape[0] < img2.shape[0] else img2.shape[0], img1.shape[1] if img1.shape[1] < img2.shape[1] else img2.shape[1])
+	ret, mask = cv.threshold(cv.cvtColor(img2[0:h,0:w], cv.COLOR_BGR2GRAY), 170, 255, cv.THRESH_BINARY)
+	mask_ink = cv.bitwise_not(mask)
+	r, c = (0, 0)
+	bg = cv.bitwise_and(img1[r:r + h, c:c + w], img1[r:r + h, c:c + w], mask=mask)
+	fg = cv.bitwise_and(img1[r:r + h, c:c + w], img1[r:r + h, c:c + w], mask=mask_ink)
+	img1[r:r + h, c:c + w] = cv.add(bg, fg)
+
+	plt.subplot(gs[1,0])
+	plt.imshow(mask)
+	plt.xticks(())
+	plt.yticks(())
+	
+	plt.subplot(gs[1,1])
+	plt.imshow(mask_ink)
+	plt.xticks(())
+	plt.yticks(())
+	
+	plt.subplot(gs[2,0])
+	plt.imshow(bg)
+	plt.xticks(())
+	plt.yticks(())
+	
+	plt.subplot(gs[2,1])
+	plt.imshow(fg)
+	plt.xticks(())
+	plt.yticks(())
+	
+	plt.subplot(gs[:2,2])
+	plt.imshow(img1)
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.subplot(gs[2,2])
+	plt.imshow(cv.add(bg, fg))
+	plt.xticks(())
+	plt.yticks(())
+
+	plt.show()
+
+def catch_white():
+	capture = cv.VideoCapture(1)
+	if not capture.isOpened():
+		print('open capture')
+		capture.open()
+	while True:
+		ret, frame = capture.read()
+		if ret:
+			catch_color(frame, np.array([0, 0, 221]), np.array([180, 30, 255]))
+			k = cv.waitKey(1)
+			if k == ord('q'):
+				break
+		else:
+			break
+	cv.destroyAllWindows()
+
+def catch_color(frame, lower, upper):
+	hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+	mask = cv.inRange(hsv, lower, upper)
+	res = cv.bitwise_and(frame, frame, mask=mask)
+	cv.imshow('frame', frame)
+	cv.imshow('hsv', hsv)
+	cv.imshow('mask', mask)
+	cv.imshow('res', res)
+
+def trans_geometry():
+	img = cv.imread('./res/tumblr.png', cv.IMREAD_COLOR)
+
+	h, w = img.shape[:2]
+
+	cv.imshow('img', img)
+	cv.imshow('scale:0.5', cv.resize(img, None, fx=0.5, fy=0.5, interpolation=cv.INTER_CUBIC))
+	cv.imshow('scale:2', cv.resize(img, (w*2, h*2), interpolation=cv.INTER_CUBIC))
+
+	cv.waitKey(0)
+	cv.destroyAllWindows()
+
 if __name__ == '__main__':
 	print(__doc__ % __author__)
-	rws()
+#	rws()
 #	rws2()
 #	camera_()
 #	video_()
@@ -229,3 +390,8 @@ if __name__ == '__main__':
 #	draw()
 #	mouse_events()
 #	trackbar()
+#	makeborder()
+#	operate()
+#	bitwise()
+#	catch_white()
+	trans_geometry()	
