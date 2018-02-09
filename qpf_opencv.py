@@ -369,13 +369,76 @@ def catch_color(frame, lower, upper):
 	cv.imshow('res', res)
 
 def trans_geometry():
-	img = cv.imread('./res/tumblr.png', cv.IMREAD_COLOR)
+	img = cv.imread('./res/b.jpg', cv.IMREAD_COLOR)
 
 	h, w = img.shape[:2]
+	print(np.array([[1, 0, 10],[0, 1, 0]]))
 
 	cv.imshow('img', img)
 	cv.imshow('scale:0.5', cv.resize(img, None, fx=0.5, fy=0.5, interpolation=cv.INTER_CUBIC))
 	cv.imshow('scale:2', cv.resize(img, (w*2, h*2), interpolation=cv.INTER_CUBIC))
+	cv.imshow('translate', cv.warpAffine(img, np.array([[1, 0, w//2],[0, 1, 0]], dtype=np.float32), (w, h)))
+	rotation = cv.getRotationMatrix2D((w/2, h/2), 45, 0.6)
+	cv.imshow('rotation', cv.warpAffine(img, rotation, (w, h)))
+
+	src = np.float32(([0, 0], [w - 1, 0], [0, h - 1]))
+	dest = np.float32(([50, 50], [w - 1, 0], [0, h - 1]))
+
+	affine = cv.getAffineTransform(src, dest)
+	cv.imshow('affine', cv.warpAffine(img, affine, (w, h)))
+
+
+	src = np.float32(([0, 0], [w -1, 0], [0, h - 1], [w - 1, h - 1]))
+	dest = np.float32(([50, 50], [w -1, 0], [0, h - 1], [w - 50, h - 50]))
+
+	perspective = cv.getPerspectiveTransform(src, dest)
+	cv.imshow('perspective', cv.warpPerspective(img, perspective, (w, h)))
+
+	cv.waitKey(0)
+	cv.destroyAllWindows()
+
+def thresh():
+	flags = [x for x in dir(cv) if x.startswith('THRESH') and x not in ['THRESH_OTSU', 'THRESH_TRIANGLE']]
+	img = cv.imread('./res/tumblr.png', cv.IMREAD_UNCHANGED)
+	print(flags)
+	cv.imshow('Origin', img)
+
+	for flag in flags:
+
+		print(flag)
+		cv.imshow(flag, cv.threshold(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 127, 255, getattr(cv, flag))[1])
+	img_ = cv.medianBlur(img, 5)
+	cv.imshow('ADAPTIVE_THRESH_MEAN_C', cv.adaptiveThreshold(cv.cvtColor(img_, cv.COLOR_BGR2GRAY), 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 11, 2))
+	cv.imshow('ADAPTIVE_THRESH_GAUSSIAN_C', cv.adaptiveThreshold(cv.cvtColor(img_, cv.COLOR_BGR2GRAY), 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2))
+	thresh = cv.threshold(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)[0]
+	cv.imshow('Otsu', cv.threshold(img, thresh, 255, cv.THRESH_BINARY)[1])
+
+	cv.waitKey(0)
+	cv.destroyAllWindows()
+
+def filter():
+	img = cv.imread('./res/tumblr.png', cv.IMREAD_UNCHANGED)
+	cv.imshow('Origin', img)
+	kernel = np.ones((5, 5), np.float32) / 25
+	cv.imshow('smooth', cv.filter2D(img, -1, kernel))
+	cv.imshow('blur', cv.blur(img, (5, 5)))
+	cv.imshow('gaussianBlur', cv.GaussianBlur(img, (5, 5), 0))
+	cv.imshow('medianBlur', cv.medianBlur(img, 5))
+	cv.imshow('bilateralFilter', cv.bilateralFilter(img, 9, 75, 75))
+	cv.waitKey(0)
+	cv.destroyAllWindows()
+
+def morphology():
+	img = cv.imread('./res/tumblr.png', cv.IMREAD_UNCHANGED)
+	kernel = np.ones((5, 5), np.uint8)
+	cv.imshow('Origin', img)
+	cv.imshow('erode', cv.erode(img, kernel, iterations=1))
+	cv.imshow('dilate', cv.dilate(img, kernel, iterations=1))
+	cv.imshow('open', cv.morphologyEx(img, cv.MORPH_OPEN, kernel))
+	cv.imshow('close', cv.morphologyEx(img, cv.MORPH_CLOSE, kernel))
+	cv.imshow('gradient', cv.morphologyEx(img, cv.MORPH_GRADIENT, kernel))
+	cv.imshow('tophat', cv.morphologyEx(img, cv.MORPH_TOPHAT, kernel))
+	cv.imshow('blackhat', cv.morphologyEx(img, cv.MORPH_BLACKHAT, kernel))
 
 	cv.waitKey(0)
 	cv.destroyAllWindows()
@@ -394,4 +457,7 @@ if __name__ == '__main__':
 #	operate()
 #	bitwise()
 #	catch_white()
-	trans_geometry()	
+#	trans_geometry()	
+#	thresh()
+#	filter()
+	morphology()
