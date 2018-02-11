@@ -33,9 +33,9 @@ def rws():
 #	g = g + 100
 #	img = cv.merge((r, g, b))
 	
-	r = img[:,:,0]
+	b = img[:,:,0]
 	g = img[:,:,1]
-	b = img[:,:,2]
+	r = img[:,:,2]
 
 	img[:,:,1] = img[:,:,1] + 100
 
@@ -62,6 +62,9 @@ def rws2():
 	img = cv.imread('./res/face.png', cv.IMREAD_COLOR)
 	fig = plt.figure()
 	plt.subplot(1, 2, 1)
+	b, g, r = cv.split(img)
+	img = cv.merge((r, g, b))
+
 	plt.imshow(img, cmap=None, interpolation='nearest')
 	plt.xticks(())
 	plt.yticks(())
@@ -80,61 +83,71 @@ def camera_():
 	if not cap.isOpened():
 		print('open')
 		cap.open()
-	for i in range(1, 19):
-		print(cap.get(i))
+	rec = False
 	while True:
 		ret, frame = cap.read()
 		if ret:
+			frame = cv.flip(frame, 0)
 			gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-			out.write(frame)
 			cv.imshow('frame', gray)
-			if cv.waitKey(25) == ord('q'):
+			k = cv.waitKey(25)
+			if k == ord('q'):
 				break
+			elif k == ord('m'):
+				out.write(frame)
 		else:
 			break
 	cap.release()
 	out.release()
 	cv.destroyAllWindows()
 
+def drag(index):
+	global cap, current
+	cap.set(1, index)
+	ret, frame = cap.read()
+	if ret:
+		cv.imshow('play', frame)
+	current = index
+	print(cap.get(1))
 
 def video_():
+	cap = None
+	playing = False
+	winName = 'play'
+	def drag(index):
+		cap.set(1, index)
+		ret, frame = cap.read()
+		if ret:
+			cv.imshow(winName, frame)
+#		print(cap.get(1))
+
 	cap = cv.VideoCapture('./res/a.mp4')
 	if not cap.isOpened():
 		print('open')
 		cap.open()
-	for i in range(1, 19):
-		print(cap.get(i))
+	#Frame_COUNT
+	count = cap.get(7)
+	print(count)
+
+	cv.namedWindow(winName)
+	cv.createTrackbar('process', winName, 0, int(count), drag)
+	ret, frame = cap.read()
+	if ret: cv.imshow(winName, frame)
 	while True:
-		ret, frame = cap.read()
-		gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-		cv.imshow('frame', gray)
-		if cv.waitKey(25) == ord('q'):
-			break
+		if playing:
+			ret, frame = cap.read()
+			if ret:
+				cv.imshow(winName, frame)
+		else:
+			pass
+		k = cv.waitKey(25)
+		if k == ord('q'):
+	 		break
+		elif k == ord('m'):
+	 		playing = not playing
 	cap.release()
 	cv.destroyAllWindows()
 
-def video_save():
-	cap = cv.VideoCapture('./res/a.mp4')
-	fourcc = cv.VideoWriter_fourcc(*'XVID')
-	out = cv.VideoWriter('./res/out.avi', fourcc, 25, (640, 480))
-	if not cap.isOpened():
-		print('open')
-		cap.open()
-	for i in range(1, 19):
-		print(cap.get(i))
-	while True:
-		ret, frame = cap.read()
-		if ret:
-			gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-			out.write(frame)
-			cv.imshow('frame', gray)
-			if cv.waitKey(25) == ord('q'):
-				break
-		else:
-			break
-	cap.release()
-	out.release()
-	cv.destroyAllWindows()
 
 img = np.zeros((512, 512, 3), np.uint8)
 
@@ -158,39 +171,47 @@ def draw():
 	if k == ord('q'):
 		cv.destroyAllWindows()
 
-drawing = False
-mod = True
-ix, iy = (-1, -1)
-def drawcircle(event, x, y, flags, param):
-	global drawing, mod, ix, iy
-	if event == cv.EVENT_LBUTTONDOWN:
-		drawing = True
-		ix, iy = (x, y)
-	elif event == cv.EVENT_MOUSEMOVE and cv.EVENT_FLAG_LBUTTON:
-		if drawing:
-			if mod:
-				cv.rectangle(img, (ix, iy), (x, y), (255, 0, 255), -1, cv.LINE_AA)
-			else:
-				cv.circle(img, (x,y), 3, (255, 255, 0), -1, cv.LINE_AA)
-	elif event == cv.EVENT_LBUTTONUP:
-		drawing = False
-		
+	
 
 
 def mouse_events():
 #	events = [i for i in dir(cv) if 'EVENT' in i]
 #	print(events)
-	global mod
+	drawing = False
+	ix, iy = (-1, -1)
+	color = (255, 255, 255)
+	def draw(event, x, y, flags, param):
+		nonlocal drawing, ix, iy, color
+		
+		if event == cv.EVENT_LBUTTONDOWN:
+			drawing = True
+			ix, iy = (x, y)
+		elif event == cv.EVENT_MOUSEMOVE and cv.EVENT_FLAG_LBUTTON:
+			r = cv.getTrackbarPos('R', 'Color') if cv.getTrackbarPos('R', 'Color') >= 0 else color[2]
+			g = cv.getTrackbarPos('G', 'Color') if cv.getTrackbarPos('G', 'Color') >= 0 else color[1]
+			b = cv.getTrackbarPos('B', 'Color') if cv.getTrackbarPos('B', 'Color') >= 0 else color[0]
+			color = (b, g, r)
+			if drawing:
+				cv.line(img, (ix, iy), (x, y), color, 2, cv.LINE_AA)
+			ix, iy = (x, y)
+		elif event == cv.EVENT_LBUTTONUP:
+			drawing = False
+		elif event == cv.EVENT_RBUTTONDOWN:
+			cv.namedWindow('Color')
+			cv.createTrackbar('R', 'Color', 255, 255, paint)
+			cv.createTrackbar('G', 'Color', 255, 255, paint)
+			cv.createTrackbar('B', 'Color', 0, 255, paint)
+
+	def paint(x):
+		pass
 	cv.namedWindow('Mouse_Event')
-	cv.setMouseCallback('Mouse_Event', drawcircle)
+	cv.setMouseCallback('Mouse_Event', draw)
 
 	while True:
 		cv.imshow('Mouse_Event', img)
 		k = cv.waitKey(1)
 		if k == ord('q'):
 			break
-		elif k == ord('m'):
-			mod = not mod
 
 	cv.destroyAllWindows()
 
@@ -256,16 +277,20 @@ def makeborder():
 
 
 def operate():
-	img1 = cv.imread('./res/tumblr.png', cv.IMREAD_COLOR)
-	img2 = cv.imread('./res/face.png', cv.IMREAD_COLOR)
+	img1 = cv.imread('./res/tumblr.png', cv.IMREAD_UNCHANGED)
+	img2 = cv.imread('./res/face.png', cv.IMREAD_UNCHANGED)
+	b, g, r = cv.split(img1)
+	img1 = cv.merge((r, g, b))
+	b, g, r = cv.split(img2)
+	img2 = cv.merge((r, g, b))
 	fig = plt.figure()
 	plt.subplot(331)
-	plt.imshow(img1, 'gray')
+	plt.imshow(img1)
 	plt.xticks(())
 	plt.yticks(())
 
 	plt.subplot(332)
-	plt.imshow(img2, 'gray')
+	plt.imshow(img2)
 	plt.xticks(())
 	plt.yticks(())
 
@@ -289,6 +314,10 @@ def operate():
 def bitwise():
 	img1 = cv.imread('./res/tumblr.png', cv.IMREAD_COLOR)
 	img2 = cv.imread('./res/face.png', cv.IMREAD_COLOR)
+	b, g, r = cv.split(img1)
+	img1 = cv.merge((r, g, b))
+	b, g, r = cv.split(img2)
+	img2 = cv.merge((r, g, b))
 
 	fig = plt.figure()
 	gs = gridspec.GridSpec(3, 3)
@@ -307,8 +336,8 @@ def bitwise():
 	ret, mask = cv.threshold(cv.cvtColor(img2[0:h,0:w], cv.COLOR_BGR2GRAY), 170, 255, cv.THRESH_BINARY)
 	mask_ink = cv.bitwise_not(mask)
 	r, c = (0, 0)
-	bg = cv.bitwise_and(img1[r:r + h, c:c + w], img1[r:r + h, c:c + w], mask=mask)
-	fg = cv.bitwise_and(img1[r:r + h, c:c + w], img1[r:r + h, c:c + w], mask=mask_ink)
+	bg = cv.bitwise_and(img1[r:r + h, c:c + w], img1[r:r + h, c:c + w], mask=mask_ink)
+	fg = cv.bitwise_and(img2[r:r + h, c:c + w], img2[r:r + h, c:c + w], mask=mask)
 	img1[r:r + h, c:c + w] = cv.add(bg, fg)
 
 	plt.subplot(gs[1,0])
@@ -342,6 +371,23 @@ def bitwise():
 	plt.yticks(())
 
 	plt.show()
+def flashPic():
+	img1 = cv.imread('./res/b.jpg', cv.IMREAD_UNCHANGED)
+	img2 = cv.imread('./res/tumblr.png', cv.IMREAD_UNCHANGED)
+	rate = 0.01
+	direct = 0.01
+	r, c = (img1.shape[0] if img1.shape[0] < img2.shape[0] else img2.shape[0], img1.shape[1] if img1.shape[1] < img2.shape[1] else img2.shape[1])
+	print('img1: %s' % str(img1.shape))
+	print('img2: %s' % str(img2.shape))
+	print('r, c: %s' % str((r, c)))
+	while True:
+		cv.imshow('flash', cv.addWeighted(img1[0:r, 0:c], rate, img2[0:r, 0:c], 1 - rate, 0))
+		k = cv.waitKey(1)
+		if k == ord('q'):
+			break
+		if rate < 0.01 or rate > 0.99:
+			direct *= -1
+		rate += direct
 
 def catch_white():
 	capture = cv.VideoCapture(1)
@@ -404,7 +450,6 @@ def thresh():
 	cv.imshow('Origin', img)
 
 	for flag in flags:
-
 		print(flag)
 		cv.imshow(flag, cv.threshold(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 127, 255, getattr(cv, flag))[1])
 	img_ = cv.medianBlur(img, 5)
@@ -443,6 +488,19 @@ def morphology():
 	cv.waitKey(0)
 	cv.destroyAllWindows()
 
+def gradient():
+	img = cv.imread('./res/a.png', cv.IMREAD_UNCHANGED)
+	sobelx = cv.Sobel(img, cv.CV_64F, 1, 0, ksize=5)
+	sobely = cv.Sobel(img, cv.CV_64F, 0, 1, ksize=5)
+	laplacian = cv.Laplacian(img, cv.CV_64F)
+
+	cv.imshow('sobelx', sobelx)
+	cv.imshow('sobely', sobely)
+	cv.imshow('Laplacian', laplacian)
+
+	cv.waitKey(0)
+	cv.destroyAllWindows()
+
 if __name__ == '__main__':
 	print(__doc__ % __author__)
 #	rws()
@@ -460,4 +518,5 @@ if __name__ == '__main__':
 #	trans_geometry()	
 #	thresh()
 #	filter()
-	morphology()
+#	morphology()
+#	gradient()
