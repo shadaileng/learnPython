@@ -493,13 +493,113 @@ def gradient():
 	sobelx = cv.Sobel(img, cv.CV_64F, 1, 0, ksize=5)
 	sobely = cv.Sobel(img, cv.CV_64F, 0, 1, ksize=5)
 	laplacian = cv.Laplacian(img, cv.CV_64F)
-
+	cv.namedWindow('sobelx', cv.WINDOW_NORMAL)
+	cv.namedWindow('sobely', cv.WINDOW_NORMAL)
+	cv.namedWindow('Laplacian', cv.WINDOW_NORMAL)
 	cv.imshow('sobelx', sobelx)
 	cv.imshow('sobely', sobely)
 	cv.imshow('Laplacian', laplacian)
 
 	cv.waitKey(0)
 	cv.destroyAllWindows()
+
+def canny():
+	img = cv.imread('./res/a.png', cv.IMREAD_GRAYSCALE)
+
+	r, c = img.shape
+
+#	pic = np.zeros((r, c), np.uint8)
+	cv.namedWindow('show', cv.WINDOW_NORMAL)
+
+	#	cv.namedWindow('drag')
+	cv.createTrackbar('min', 'show', 100, 255, nothing)
+	cv.createTrackbar('max', 'show', 200, 255, nothing)
+
+	while True:
+		min = cv.getTrackbarPos('min', 'show')
+		max = cv.getTrackbarPos('max', 'show')
+		edges = cv.Canny(img, min, max)
+#		pic[0:r, 0:c // 2] = img[:,0:c // 2]
+#		pic[0:r, c // 2: c] = edges[:,c // 2: c]
+		pic = np.hstack((img[:,0:c // 2], edges[:,c // 2: c]))
+
+		cv.imshow('show', pic)
+		k = cv.waitKey(25)
+		if k == ord('q'):
+			break
+
+	cv.waitKey(0)
+	cv.destroyAllWindows()
+def minRC(src1, src2):
+	r, c = (src1.shape[0] if src1.shape[0] < src2.shape[0] else src2.shape[0], src1.shape[1] if src1.shape[1] < src2.shape[1] else src2.shape[1])
+	return (r, c)
+
+def pyramid():
+	img = cv.imread('./res/a.png')
+	G = img.copy()
+	gp = []
+	for i in range(0, 6):
+		G = cv.pyrDown(G)
+		print(i, G.size)
+		gp.append(G)
+		cv.imshow('pd%s' % i, G)
+
+
+	for i in range(5, 0, -1):
+		GE = cv.pyrUp(gp[i])
+		r,c = minRC(gp[i - 1], GE)
+		L = cv.add(gp[i - 1][:r, :c], GE[:r, :c])
+		cv.imshow('pu%s' % i, np.hstack((L[:,0:c // 2], gp[i - 1][:,c // 2: c])))
+
+
+	cv.waitKey(0)
+	cv.destroyAllWindows()
+
+def contours():
+	img = cv.imread('./res/b.jpg', cv.IMREAD_UNCHANGED)
+	
+#	img = np.zeros((512, 512, 3), np.uint8)
+#	cv.rectangle(img, (50, 50), (462, 462), (255, 0, 0), -1)
+
+
+	mask = cv.threshold(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)[1]
+
+	res, contours_, hierarchy = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+	tmp = img.copy()
+
+	t = 38
+
+	print(cv.moments(contours_[t]))
+
+	x, y, w, h = cv.boundingRect(contours_[t])
+	cv.rectangle(tmp, (x, y), (x + w, y + h), (255, 0, 0), 2)
+
+	(cx, cy), r = cv.minEnclosingCircle(contours_[t])
+	cv.circle(tmp, (int(cx), int(cy)), int(r), (0, 0, 255), 2)
+
+	ellipse = cv.fitEllipse(contours_[t])
+	cv.ellipse(tmp, ellipse, (0, 255, 255), 2)
+
+	row, col = tmp.shape[:2]
+	(vx, vy, x0, y0) = cv.fitLine(contours_[t], cv.DIST_L2, 0, 0.01, 0.01)
+
+	y1 = int( y0 - x0 * vy / vx) 
+	y2 = int( y0 + (col - x0) * vy / vx) 
+	cv.line(tmp, (0, y1), (col - 1, y2), (0, 255, 255), 2)
+
+	contours_mask = np.zeros(mask.shape, np.uint8)
+
+	res_png = cv.drawContours(tmp, contours_, t, (0, 255, 0), 2)
+	contours_mask = cv.drawContours(contours_mask, contours_, -1, (255, 255, 255), 2)
+
+	cv.imshow('mask', mask)
+	cv.imshow('res', res)
+	cv.imshow('res_png', res_png)
+	cv.imshow('contours_mask', contours_mask)
+
+	cv.waitKey(0)
+	cv.destroyAllWindows()
+
 
 if __name__ == '__main__':
 	print(__doc__ % __author__)
