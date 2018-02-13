@@ -87,9 +87,9 @@ def camera_():
 	while True:
 		ret, frame = cap.read()
 		if ret:
-			frame = cv.flip(frame, 0)
+#			frame = cv.flip(frame, 0)
 			gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-			cv.imshow('frame', gray)
+			cv.imshow('frame', frame)
 			k = cv.waitKey(25)
 			if k == ord('q'):
 				break
@@ -97,6 +97,7 @@ def camera_():
 				out.write(frame)
 		else:
 			break
+#	cv.imwrite('./res/tmp.png', cap.read()[1])
 	cap.release()
 	out.release()
 	cv.destroyAllWindows()
@@ -556,18 +557,19 @@ def pyramid():
 	cv.destroyAllWindows()
 
 def contours():
-	img = cv.imread('./res/b.jpg', cv.IMREAD_UNCHANGED)
+	img = cv.imread('./res/auto_shot.png', cv.IMREAD_UNCHANGED)
 	
 #	img = np.zeros((512, 512, 3), np.uint8)
 #	cv.rectangle(img, (50, 50), (462, 462), (255, 0, 0), -1)
 
 
-	mask = cv.threshold(cv.cvtColor(img, cv.COLOR_BGR2GRAY), 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)[1]
+	mask = cv.threshold(cv.GaussianBlur(cv.cvtColor(img, cv.COLOR_BGR2GRAY), (5, 5), 0), 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)[1]
+
 
 	res, contours_, hierarchy = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 	tmp = img.copy()
 
-	t = 38
+	t = -1
 
 	print(cv.moments(contours_[t]))
 
@@ -587,10 +589,16 @@ def contours():
 	y2 = int( y0 + (col - x0) * vy / vx) 
 	cv.line(tmp, (0, y1), (col - 1, y2), (0, 255, 255), 2)
 
-	contours_mask = np.zeros(mask.shape, np.uint8)
-
 	res_png = cv.drawContours(tmp, contours_, t, (0, 255, 0), 2)
-	contours_mask = cv.drawContours(contours_mask, contours_, -1, (255, 255, 255), 2)
+
+	contours_mask = np.zeros(mask.shape, np.uint8)
+	contours_mask = cv.drawContours(contours_mask, contours_, t, (255, 255, 255), -1)
+	points = np.transpose(np.nonzero(contours_mask))
+
+	cv.namedWindow('mask', cv.WINDOW_NORMAL)
+	cv.namedWindow('res', cv.WINDOW_NORMAL)
+	cv.namedWindow('res_png', cv.WINDOW_NORMAL)
+	cv.namedWindow('contours_mask', cv.WINDOW_NORMAL)
 
 	cv.imshow('mask', mask)
 	cv.imshow('res', res)
@@ -599,7 +607,81 @@ def contours():
 
 	cv.waitKey(0)
 	cv.destroyAllWindows()
+def getContours(img):
 
+	mask = cv.adaptiveThreshold(cv.GaussianBlur(cv.cvtColor(img, cv.COLOR_BGR2GRAY), (5, 5), 0), 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
+	img_, contours, hierarchy = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+
+#	cv.imshow('2', mask)
+
+	return contours
+
+def contours_match(src, index, dest):
+#	src = cv.imread('./res/auto_shot.png', cv.IMREAD_UNCHANGED)
+	contours = getContours(src)
+	cv.drawContours(src, contours, index, (0, 255, 0), 2)
+
+
+#	dest = cv.imread('./res/auto_shot_3.png', cv.IMREAD_UNCHANGED)
+	contours_ = getContours(dest)
+
+	matchs = []
+	for i in range(len(contours_)):
+		matchs.append(cv.matchShapes(contours[index], contours_[i], 1, 0.0))
+
+	print(matchs.index(min(matchs)), min(matchs))
+	cv.drawContours(dest, contours_, matchs.index(min(matchs)), (0, 255, 0), 2)
+
+	cv.namedWindow('1', cv.WINDOW_NORMAL)
+	cv.imshow('1', src)
+	cv.namedWindow('2', cv.WINDOW_NORMAL)
+	cv.imshow('2', dest)
+
+def catch_part_test():
+	src = cv.imread('./res/tmp.png', cv.IMREAD_UNCHANGED)
+	contours = getContours(src)
+	cv.drawContours(src, contours, -1, (0, 255, 0), 2)
+
+	cv.namedWindow('1', cv.WINDOW_NORMAL)
+	cv.imshow('1', src)
+
+	cv.waitKey(0)
+	cv.destroyAllWindows()
+
+def catch_part():
+
+	src = cv.imread('./res/auto_shot.png', cv.IMREAD_UNCHANGED)
+	dest = cv.imread('./res/auto_shot_3.png', cv.IMREAD_UNCHANGED)
+	contours_match(src, 93, dest)
+
+	cv.waitKey(0)
+	cv.destroyAllWindows()
+
+def contour_distance():
+	src = np.zeros((512, 512, 3), np.uint8)
+	cv.rectangle(src, (100, 100), (402, 402), (0, 255, 0), 2)
+	contours = getContours(src)
+
+	cv.drawContours(src, contours, 4, (0, 0, 255), 1)
+
+	tmp = np.zeros(src.shape, np.uint8)
+
+	for row in range(tmp.shape[0]):
+		for col in range(tmp.shape[1]):
+			c = int(cv.pointPolygonTest(contours[4], (col, row), True))
+#			tmp.itemset((row, col, 1), 200)
+			if c > 0 :
+				tmp.itemset((row, col, 0), c % 255)
+			elif c < 0:
+				tmp.itemset((row, col, 2), -c % 255)
+
+
+#	cv.namedWindow('1', cv.WINDOW_NORMAL)
+	cv.imshow('1', src)
+	cv.imshow('2', tmp)
+
+	cv.waitKey(0)
+	cv.destroyAllWindows()
 
 if __name__ == '__main__':
 	print(__doc__ % __author__)
