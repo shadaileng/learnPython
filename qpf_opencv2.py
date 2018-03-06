@@ -133,106 +133,83 @@ def equalize():
 	cv.imshow('clahe', clahe_)
 	plt.show()
 
-@load_img('./res/tumblr.jpg')
-def drawHist_():
-	src = cv.imread(drawHist_.__path__, cv.IMREAD_UNCHANGED)
-	
-	x, y, r, c = (100, 100, 256, 256)
-	img = src[y: y + r, x: x + c]
-	
-	cv.imshow('src', src)
-	cv.imshow('img', img)
-	cv.namedWindow('hstack', cv.WINDOW_NORMAL)
-	data = img
-	cv.imshow('hstack', np.hstack((data, drawHist(data, data.shape[0], data.shape[1], chanels=[0], bin=1, show=False,top = 0.05, bottom = 0.95, left = 0.05, right = 0.95))))
-	
-	gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
-	data1 = gray
-	#equalizeHist
-	data2 = cv.equalizeHist(gray)
-	cv.imshow('gray-equalize', np.hstack((data1, data2)))
-	data1 = drawHist(data1, chanels=[0], bin=1, show=False,top = 0.05, bottom = 0.95, left = 0.05, right = 0.95)
-	data2 = drawHist(data2, chanels=[0], bin=1, show=False,top = 0.05, bottom = 0.95, left = 0.05, right = 0.95)
-	cv.imshow('grayHist-equalizeHist', np.hstack((data1, data2)))
-	
-	#CLAHE
-	data1 = gray
-	clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-	data2 = clahe.apply(gray)
-	cv.imshow('gray-clahe', np.hstack((data1, data2)))
-	data1 = drawHist(data1, chanels=[0], bin=1, show=False,top = 0.05, bottom = 0.95, left = 0.05, right = 0.95)
-	data2 = drawHist(data2, chanels=[0], bin=1, show=False,top = 0.05, bottom = 0.95, left = 0.05, right = 0.95)
-	cv.imshow('grayHist-claheHist', np.hstack((data1, data2)))
+@load_img('./res/tumblr.png')
+def histogram_plt():
+	src = cv.imread(histogram_plt.__path__, cv.IMREAD_UNCHANGED)
+	plt.subplot(221)
+	plt.hist(src[:,:,0].ravel(), 256, [0, 256], color='blue', histtype='step')
+	plt.hist(src[:,:,1].ravel(), 256, [0, 256], color='green', histtype='step')
+	plt.hist(src[:,:,2].ravel(), 256, [0, 256], color='red', histtype='step')
 
-def drawHist(img, r = 512, c = 512, chanels=[0], ranges = [0, 256], bin = 1, show = True, top = None, bottom = None, left = None, right = None):
-	'''
-		drawHist 根据输入图像绘制直方图
-		r = 行
-		c = 列
-		chanels = 颜色通道
-		ranges = 范围
-		bin = 分组大小
-		show = 是否立即绘制 bool
-		top = 顶部边距 [0,1] 默认：0
-		bottom = 底部边距 [0, 1] 默认：1
-		left = 左侧边距 [0, 1] 默认：0
-		right = 右侧边距 [0, 1] 默认：1
-	'''
-	
-	output = np.zeros((r, c, 3), np.uint8)
-	top = int(((0 if top < 0 or top > 1 else top) if top is not None else 0) * r)
-	bottom = int(((1 if bottom < 0 or bottom > 1 else bottom) if bottom is not None else 1) * r)
-	left = int(((0 if left < 0 or left > 1 else left) if left is not None else 0) * c)
-	right = int(((1 if right < 0 or right > 1 else right) if right is not None else 1) * c)
-	
-	cv.line(output, (left, 0), (left, r), (0, 255, 255)) # y
-	cv.line(output, (0, bottom), (c, bottom), (0, 255, 255)) # x
-	
-	colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
-	
-	for c in chanels:
-		hist = cv.calcHist([img], [c], None, [256], [0, 256])
-		
+	plt.subplot(222)
+	hist, bins = np.histogram(src[:,:,0].ravel(), 256, [0, 256])
+	plt.plot(hist, color='b')
+	hist, bins = np.histogram(src[:,:,1].ravel(), 256, [0, 256])
+	plt.plot(hist, color='g')
+	hist, bins = np.histogram(src[:,:,2].ravel(), 256, [0, 256])
+	plt.plot(hist, color='r')
+
+	plt.subplot(223)
+	hist = np.bincount(src[:,:,0].ravel(), minlength=256)
+	plt.plot(hist, color='b')
+	hist = np.bincount(src[:,:,1].ravel(), minlength=256)
+	plt.plot(hist, color='g')
+	hist = np.bincount(src[:,:,2].ravel(), minlength=256)
+	plt.plot(hist, color='r')
+
+	plt.subplot(224)
+	hist = cv.calcHist([src], [0], None, [256], [0, 256])
+	plt.plot(hist, 'b')
+	hist = cv.calcHist([src], [1], None, [256], [0, 256])
+	plt.plot(hist, 'g')
+	hist = cv.calcHist([src], [2], None, [256], [0, 256])
+	plt.plot(hist, 'r')
+
+	plt.show()
+
+@load_img('./res/tumblr.png')
+def histogram_cv2():
+	src = cv.imread(histogram_cv2.__path__, cv.IMREAD_UNCHANGED)
+	output = None
+	for i, c in enumerate([(255, 0, 0), (0, 255, 0), (0, 0, 255)]):
+		hist = cv.calcHist([src], [i], None, [256], [0, 256])
 		data = hist.ravel()
-		
-		data__ = []
-		for i in range(ranges[0], ranges[1], bin):
-			data__.append(sum(data[i:i+bin]))
-		max_ = max(data__)
-		data_ = data__ / max_ * (bottom - top)
-		
-		color = colors[c]
-		
-		cdf = np.cumsum(data__)
-		cdf_normalize = cdf * np.max(data_) / cdf.max()
-				
-		output = drawData(data_, output, color, (0.05, 0.95, 0.05, 0.95))
-		output = drawData(cdf_normalize, output, (255, 255, 255), (0.05, 0.95, 0.05, 0.95), block=False)
+		cdf = np.cumsum(data)
+		cdf_normalize = cdf / max(cdf) * max(data)
+		output = drawData(cdf_normalize, output, 256, (512, 512), c, (0.05, 0.95, 0.05, 0.95), histtype='line')
+		output = drawData(data, output, 256, (512, 512), c, (0.05, 0.95, 0.05, 0.95), histtype='line')
 
-	if show:
-#		cv.namedWindow('output', cv.WINDOW_NORMAL)
-		cv.imshow('output', output)
-	return output
-	
-def drawData(data, output, color=(255, 255, 255), padding=(0, 1, 0, 1), block = True):
-	
-	r, c = output.shape[:2]
-	top = int(padding[0] * r)
-	bottom = int(padding[1] * r)
-	left = int(padding[2] * c)
-	right = int(padding[3] * c)
-	data_len = len(data)
-	for i in range(data_len):
-		x, y = (int(i / data_len * (right - left)) + left, bottom - int(data[i]))
-		x_, y_ = (int((i + 1) / data_len * (right - left)) + left, bottom - int(data[i + 1]) if i < data_len - 1 else y)
-		if block:
-			if i == data_len - 1:
-				cv.line(output, (x_, bottom - 1), (x_, y_), color)
-			cv.line(output, (x, bottom - 1), (x, y), color)
-			cv.line(output, (x, max(y, y_)), (x_, max(y, y_)), color)
-		
-		cv.line(output, (x, y), (x_, y_), color)
-		
+	cv.imshow('histogram', output)
+def drawData(data, output, BINs=256, rc=(256, 256), color = (255, 255, 255), padding=(0, 1, 0, 1), histtype='hist', isShow=False):
+	r, c = rc
+	if output is None:
+		output = np.zeros((r, c, 3), np.uint8)
+	else:
+		r, c = output.shape[:2]
+	top = int((padding[0]) * r)
+	bottom = int((padding[1]) * r)
+	left = int((padding[2]) * r)
+	right = int((padding[3]) * r)
+	BIN = int(256 / BINs)
+	cv.line(output, (left, 0), (left, r), (255, 0, 255))
+	cv.line(output, (0, bottom), (c, bottom), (255, 0, 255))
+
+	data = data.reshape((BINs, BIN)).sum(axis=1)
+
+	data = np.floor(data / max(data) * (bottom - top))
+
+	for i in range(BINs):
+		x, y = (int(i / BINs * (right - left) + left), int(bottom - data[i]))
+		x_, y_ = (int((i + 1) / BINs * (right - left) + left), int(bottom - data[i + 1])) if i < (BINs - 1) else (int((i + 1) / BINs * (right - left) + left), (bottom - 1))
+		if histtype == 'hist':
+			cv.line(output, (x, y), (x, int(bottom - 1)), color)
+			cv.line(output, (x, y), (x_, y), color)
+			cv.line(output, (x_, y), (x_, y_), color)
+		elif histtype == 'line':
+			if i < BINs - 1:
+				cv.line(output, (x, y), (x_, y_), color)
+	if isShow:
+		cv.imshow('histogram', output)
 	return output
 
 @load_img('./res/tumblr_.png')
