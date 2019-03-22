@@ -143,7 +143,7 @@
 
 ### list
 
-- `list`是一种有序的集合，可以随时添加和删除其中的元素,元素类型可以不同
+- `list`是一种有序的集合, 可以随时添加和删除其中的元素,元素类型可以不同
 ```
 >>> l = ['A', 'B', 'C']
 ```
@@ -247,7 +247,7 @@ if 条件:
 ### dict
 
 - `dict`全称`dictionary`,其他语言中称为`map`,使用键值对存储,提高查找效率
-- `dict`的`key`必须是不可变对象,通过`key`计算位置的算法称为哈希算法(`Hash`),为了保证`hash`的正确性，作为`key`的对象就不能变
+- `dict`的`key`必须是不可变对象,通过`key`计算位置的算法称为哈希算法(`Hash`),为了保证`hash`的正确性, 作为`key`的对象就不能变
 ```
 >>> d = {'A': 1, 'B', 'C': 3}
 ```
@@ -398,8 +398,8 @@ name: Shadaileng age: 26 kw: {'city': 'GZ', 'gender': 'M'}
 ```
 
 - 命名关键字参数: 定义函数时, `*`后面的参数就是命名关键字参数,调用函数时,必须根据参数名进行赋值
-    - 命名关键字参数必须传入参数名，这和位置参数不同。如果没有传入参数名，调用将报错
-    - 命名关键字参数可以有缺省值，从而简化调用
+    - 命名关键字参数必须传入参数名, 这和位置参数不同。如果没有传入参数名, 调用将报错
+    - 命名关键字参数可以有缺省值, 从而简化调用
     - 如果参数列表中有可变参数,定义命名关键字参数时,不需要使用`*`分隔
 ```
 def person(name, age, *, gender, city):
@@ -483,16 +483,182 @@ True
 ['AX', 'AY', 'AZ', 'BX', 'BY', 'BZ', 'CX', 'CY', 'CZ']
 ```
 
+## 生成器
+
+- 生成器: `generator`, 不需要创建完整的列表,列表元素在获取时按照某种算法推算出来
+- 创建生成器的方法有两种
+    - 一个列表生成式的`[]`改成`()`,就创建了一个`generator`
+    ```
+    >>> g = [x * x for x in range(1, 3)]
+    >>> g
+    <generator object <genexpr> at 0x1022ef630>
+    ```
+    - 函数中调用`yield`语句添加元素,每次调用都会返回一个元素,函数在循环体中调用`yield``则会循环生成元素
+    ```
+    def fg():
+        yield 1
+        yield 2
+        yield 3
+    >>> t = fg
+    <generator object fg at 0x104feaaa0>
+    >>> next(t)
+    1
+    >>> next(t)
+    2
+    >>> next(t)
+    3
+    >>> next(t)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    StopIteration
+    ```
+- 使用`next()`函数获取,生成器的值,每次调用都会算出生成器的下一个值,最后一个值之后再调用则会抛出`StopIteration`异常
+```
+>>> next(g)
+1
+>>> next(g)
+4
+>>> next(g)
+9
+>>> next(g)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+```
+- 使用`for`循环遍历生成器,则不会抛出异常
+```
+for x in g:
+    print(x)
+1
+4
+9
+```
+
+## 迭代器
+
+- 可迭代对象: `Iterable`,可以直接作用于`for`循环的数据类型有以下几种:
+    - 集合数据类型, 如`list`、`tuple`、`dict`、`set`、`str`等
+    - `generator`, 包括生成器和带`yield`的`generator function`
+    ```
+    >>> from collections import Iterable
+    >>> isinstance([], Iterable)
+    True
+    ```
+
+- 迭代器: `Iterator`, 可以被next()函数调用并不断返回下一个值的对象: 生成器
+```
+>>> from collections import Iterator
+>>> isinstance((x for x in range(10)), Iterator)
+True
+```
+- 将`Iterable`变成`Iterator`可以使用`iter()`函数
+```
+>>> isinstance(iter([]), Iterator)
+True
+>>> isinstance(iter('abc'), Iterator)
+True
+```
+
+# 函数式编程
+
+## 高阶函数
+
+- 一个函数接收另一个函数作为参数, 这种函数就称之为高阶函数
+```
+def add(x, y, f):
+    return f(x) + f(y)
+>>> add(-3, 1, abs)
+4
+```
+
+- 变量可以指向函数
+```
+>>> fabs = abs
+>>> fabs(-1)
+1
+```
+
+### 常用高阶函数
+
+- `map`: 接收两个参数, 一个是函数, 一个是`Iterable`, `map`将传入的函数依次作用到序列的每个元素, 并把结果作为新的`Iterable`返回
+```
+map(f, [x1, x2, x3,x4]) = [f(x1), f(x2), f(x3), f(x4)]
+#############################################
+def f(x):
+	return x * x
+
+>>> l = map(f, range(1, 10))
+>>> print(l)
+[1, 4, 9, 16, 25, 36, 49, 64, 81]
+>>> from collections import Iterator, Iterable
+>>> print('is Iterator?', isinstance(l, Iterator))
+('is Iterator?', False)
+>>> print('is Iterable?', isinstance(l, Iterable))
+('is Iterable?', True)
+```
+
+- `reduce`把一个函数作用在一个序列`[x1, x2, x3, ...]`上, 这个函数必须接收两个参数, `reduce`把结果继续和序列的下一个元素做累积计算
+```
+reduce(f, [x1, x2, x3, x4]) = f(f(f(x1, x2), x3), x4)
+############################################
+>>> from functools import reduce
+>>> def add(x, y):
+...     return x + y
+...
+>>> reduce(add, [1, 3, 5, 7, 9])
+25
+###########################################
+print(map(lambda s: s[0].upper() + s[1:].lower(), ['adam', 'LISA', 'barT']))
+print(reduce(lambda x, y: x * y, [3, 5, 7, 9]))
+print(reduce(lambda x, y: int(x) * 10 + int(y), '123'))
+```
+
+- `filter`接收一个函数和一个序列,传入的函数依次作用于每个元素, 然后根据返回值是`True`还是`False`决定保留还是丢弃该元素
+```
+def is_odd(n):
+    return n % 2 == 1
+
+>>> list(filter(is_odd, [1, 2, 4, 5, 6, 9, 10, 15]))
+[1, 5, 9, 15]
+```
+
+### 返回函数
+
+- 函数作为结果值返回,相关参数和变量都保存在返回的函数中,每次返回的都是一个新的函数对象,这种程序结构叫做闭包(`Closure`)
+- 返回函数不要引用任何循环变量, 或者后续会发生变化的变量
+```
+def lazy_sum(*args):
+    def sum():
+        s = 0
+        for x in args:
+            s = s + x
+        return s
+    return sum
+>>> sum = lazy_sum(1, 2, 3)
+>>> sum
+<function lazy_sum.<locals>.sum at 0x101c6ed90>
+>>> sum()
+6
+```
+
+### 匿名函数
+
+- 格式: `lambda 参数: 表达式`
+- 只能有一个表达式,返回值就是该表达式的结果
+- 一般作为参数传递给高阶函数使用
+
+
+
 # IO编程
 
-IO在计算机中指的是`Input/Output`。在程序和运行时数据在内存中驻留，程序由`CPU`执行和处理数据。内存与外设通过`IO接口`进行数据交换，从外设到内存为输入，内存到外设为输出。输入输出是以数据流(`Stream`)的形式进行数据交换。由于`CPU`和内存速度远高于外设的速度，所以文件输入输出有两种处理方法：
+IO在计算机中指的是`Input/Output`。在程序和运行时数据在内存中驻留, 程序由`CPU`执行和处理数据。内存与外设通过`IO接口`进行数据交换, 从外设到内存为输入, 内存到外设为输出。输入输出是以数据流(`Stream`)的形式进行数据交换。由于`CPU`和内存速度远高于外设的速度, 所以文件输入输出有两种处理方法：
 
 - 同步模式: `CPU`等待`IO`处理完再执行后续的程序;
-- 异步模式: `CPU`不等待，继续执行后续程序，`IO`处理完成通知`CPU`;
+- 异步模式: `CPU`不等待, 继续执行后续程序, `IO`处理完成通知`CPU`;
 
 ## 文件读写
 
-读写文件的功能都是系统提供的，`Python`读写文件都是调用系统读写文件的`API`。
+读写文件的功能都是系统提供的, `Python`读写文件都是调用系统读写文件的`API`。
 
 ### 打开文件
 
@@ -501,7 +667,7 @@ IO在计算机中指的是`Input/Output`。在程序和运行时数据在内存�
 ```
 file = open(filename, mod)
 ```
-`filename`是文件的路径，`mod`是读写文件的模式：`'r'`,`'w'`,`'rb'`,`'wb'`.如果文件不存在，会跑出`IOError`错误。
+`filename`是文件的路径, `mod`是读写文件的模式：`'r'`,`'w'`,`'rb'`,`'wb'`.如果文件不存在, 会跑出`IOError`错误。
 例：
 
 ```
@@ -510,8 +676,8 @@ file = open(__file__, 'r') //以读的模式打开当前文件
 
 ### 读取文件
 
-打开的文件调用`read()`方法，返回文件里的内容。
+打开的文件调用`read()`方法, 返回文件里的内容。
 ```
 content = file.read()
 ```
-如果文件太大，一次性读取文件会是内存溢出，使用`read(size)`方法会返回`size`个字节的内容:
+如果文件太大, 一次性读取文件会是内存溢出, 使用`read(size)`方法会返回`size`个字节的内容:
