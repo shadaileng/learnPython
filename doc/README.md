@@ -765,7 +765,10 @@ if __name__ = '__main__':
 
 # 面向对象编程
 
+## 类与实例
+
 - 面向对象是把一类事物抽象成类(`Class`),然后根据类创建实例(`Instance`)
+
 - 类是创建实例的模板
 - 一个类的每个实例都有相同的方法和属性,但是最终的执行结构和数据可能不同
 
@@ -797,11 +800,11 @@ class Student(object):
 
 - 类内部定义`__init__`方法初始化属性, 第一个参数`self`代表要创建的实例本身,方法中将属性绑定到实例
 
-class Student(object):
 ```
-    def __init(self, name, sorce):
+class Student(object):
+    def __init(self, name, score):
         self.name = name
-        self.sorce = sorce
+        self.score = score
 ```
 
 - 类的内部定义了`__init__`方法,创建实例时就不能传入空参数,必须传入与`__init__`方法匹配的参数,`self`除外
@@ -810,6 +813,151 @@ class Student(object):
 >>> b = Student('b', 60)
 >>> b.name
 'b'
+```
+
+## 封装
+
+为了隐藏类内部属性,在私有变量前添加`__`,外部代码就不能改变私有变量了,再添加公有方法操作私有变量
+
+```
+class Student(object):
+    def __init(self, name, score):
+        self.__name = name
+        self.__score = score
+    def get_name(self):
+        return self.__name
+    def set_name(self, name):
+        self.__name = name
+    def get_score(self):
+        return self.__score
+    def set_score(self, score):
+       self.__score = score
+```
+
+实质上,解析器将私有变量解析为`_Student__name`和`_Student__score`,但是不建议使用这种方法操作私有变量
+
+## 继承
+
+- 一个类继承了另一个类,那么这个类就是被继承类的子类
+- 子类继承了父类的所有方法,子类可以重写其父类方法
+
+```
+class Animal(object):
+    def run(self):
+        print('running...')
+class Dog(Animal):
+    def run(self):
+        print('Dog is running...')
+```
+
+## 多态
+
+- 一个子类实例是子类类型的同时,也是父类类型
+- 子类是父类的多种形态之一
+- `isinstance()`方法可以判断一个实例是否是某一类型
+
+```
+>>> d = Dog()
+>>> isinstance(d, Dog)
+True
+>>> isinstance(d, Animal)
+True
+```
+
+## 获取对象信息
+
+- `type()`: 获取对象类型
+    - `types`模块中定义了类型常量
+
+```
+>>> type('a')
+<class 'str'>
+```
+
+- `dir()`: 获得一个对象的所有属性和方法
+
+```
+>>> dir('ABC')
+['__add__', '__class__',..., '__subclasshook__', 'capitalize', 'casefold',..., 'zfill']
+```
+
+- `len()`: 调用对象内部`__len__()`方法并返回结果
+
+- `getattr()`: 获取对象外部属性
+- `getattr()`: 设置对象外部属性
+- `hasattr()`: 对象是否有该属性
+
+```
+>>> hasattr(a, '__name')
+False
+>>> a.name = 'a_'
+>>> hasattr(a, 'name')
+True
+>>> setattr(a, 'name', '_a')
+>>> getattr(a, 'name')
+'_a'
+# 如果属性不存在,会抛出AttributeError错误, 可以设置默认值
+>>> getattr(a, score)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'Student' object has no attribute 'score'
+>>> getattr(a, score, None)
+None
+```
+
+## 类属性以及实例属性
+
+- 类属性: 类定义时绑定属性
+
+```
+class Student(object):
+    _status = '_OK'
+    ...
+>>> Student._status
+'_OK'
+```
+
+- 实例属性: 由于`Python`是动态语言,类的实例可以任意绑定属性
+
+```
+>>> a.status = 'OK'
+>>> a.status
+'OK'
+```
+
+- 如果实例属性和类属性同名,实例属性会屏蔽类属性
+
+```
+>>> a._status
+'_OK'
+>>> a._status = 'OK'
+>>> a._status
+'OK'
+>>> Student._status
+'_OK'
+```
+
+- `del`关键字删除实例属性
+
+```
+>>> del a._status
+>>> a._status
+'_OK'
+```
+- 类定义时,设置`__slots__`属性限制实例属性,该属性不会被子类继承
+
+```
+class Student(object):
+    __slots__ = ('status',)
+    ...
+>>> a = Student()
+>>> a.status = 'OK'
+>>> a.status
+'OK'
+>>> a._status = '_OK'
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'Student' object has no attribute '_status'
 ```
 
 # IO编程
@@ -847,4 +995,4 @@ content = file.read()
 
 
 # 参考
-- [](http://www.dooccn.com/python3/)
+- [在线解析器](http://www.dooccn.com/python3/)
