@@ -33,7 +33,7 @@ def catch_urllib(url):
 		
 def weibo(url):
 	email = 'qpf0510@sina.com'
-	password = '3868865439199248'
+	password = '**************'
 	login_data = parse.urlencode([('username', email), ('password', password), ('entry', 'mweibo'), ('cliend_id', ''), ('savestate', '1'), ('ec', ''), ('pagerefer', 'https://passport.weibo.cn/signin/welcome?entry=mweibo&r=http%3A%2F%2Fm.weibo.cn%2F')])
 	req = request.Request(url)
 	req.add_header('Origin', 'https://passport.weibo.cn')
